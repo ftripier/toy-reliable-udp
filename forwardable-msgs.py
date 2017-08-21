@@ -10,6 +10,8 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 client_address = '0.0.0.0'
 client_rcv_port = int(sys.argv[1])
+client = (client_address, client_rcv_port)
+sock.bind(client)
 
 print("This socket identified by: " + client_address + ":" + str(client_rcv_port))
 
@@ -30,7 +32,7 @@ def wait_for_ack(payload):
     while response != "ACK".encode('utf-8'):
         sock.sendto(payload, (server_ip, server_port))
         print("sent: " + str(payload))
-        socket_response, client_address = sock.recvfrom(1024)
+        socket_response, response_address = sock.recvfrom(1024)
         response = socket_response
         print("response: ", response)
 

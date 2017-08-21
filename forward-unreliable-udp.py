@@ -10,10 +10,14 @@ server_address = '0.0.0.0'
 server_port = int(input("Type the port number you desire for this socket: "))
 reliability = float(input("Type the fraction of datagrams that should be dropped: "))
 corruption_rate = float(input("Type the fraction of datagrams that should be corrupted: "))
-proxy_ip = input("Type the proxy client's ip: ")
-proxy_port = int(input("Type the proxy client's port: "))
 
-proxy = (proxy_ip, proxy_port)
+proxy_client_ip = input("Type the proxy client's ip: ")
+proxy_client_port = int(input("Type the proxy client's port: "))
+proxy_client = (proxy_client_ip, proxy_client_port)
+
+proxy_server_ip = input("Type the proxy server's ip: ")
+proxy_server_port = int(input("Type the proxy server's port: "))
+proxy_server = (proxy_server_ip, proxy_server_port)
 
 client = (server_address, server_port)
 sock.bind(client)
@@ -24,22 +28,12 @@ sender = None
 responder = None
 
 def send_back(payload, client_address):
-    global sender
-    global responder
-    if sender is None:
-        sender = client_address
-    elif responder is None and client_address != sender:
-        responder = client_address
-
-    if responder is None:
-        sock.sendto(payload, proxy)
+    if client_address == proxy_server:
+        sock.sendto(payload, proxy_client)
+    elif client_address == proxy_client:
+        sock.sendto(payload, proxy_server)
     else:
-        if client_address == sender:
-            sock.sendto(payload, responder)
-        elif client_address == responder:
-            sock.sendto(payload, sender)
-        else:
-            raise Exception("proxy is too hacky to deal with more than one client/server pair")
+        raise Exception("sorry, only proxy client or proxy server traffic allowed: ", client_address)
 
 while True:
     payload, client_address = sock.recvfrom(1024)
